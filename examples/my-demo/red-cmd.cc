@@ -45,6 +45,7 @@ PrintFlowMonitorStats(Ptr<FlowMonitor> flowMonitor, Ptr<Ipv4FlowClassifier> clas
     uint32_t totalLostPackets = 0;
     double totalDelaySum = 0.0;
     double totalJitterSum = 0.0;
+    uint64_t totalRxBytes = 0;
 
     for (auto iter = stats.begin(); iter != stats.end(); ++iter)
     {
@@ -53,7 +54,10 @@ PrintFlowMonitorStats(Ptr<FlowMonitor> flowMonitor, Ptr<Ipv4FlowClassifier> clas
         totalLostPackets += iter->second.lostPackets;
         totalDelaySum += iter->second.delaySum.GetSeconds();
         totalJitterSum += iter->second.jitterSum.GetSeconds();
+        totalRxBytes += iter->second.rxBytes;
     }
+
+    double throughput = totalRxBytes * 8.0; 
 
     std::cout << "\nOverall Metrics:\n";
     std::cout << "  Total Tx Packets: " << totalTxPackets << "\n";
@@ -65,6 +69,7 @@ PrintFlowMonitorStats(Ptr<FlowMonitor> flowMonitor, Ptr<Ipv4FlowClassifier> clas
               << (totalRxPackets > 0 ? totalDelaySum / totalRxPackets : 0) << "s\n";
     std::cout << "  Overall Average Jitter: "
               << (totalRxPackets > 1 ? totalJitterSum / (totalRxPackets - 1) : 0) << "s\n";
+    std::cout << "  Overall Throughput: " << throughput << " bits\n";
 }
 
 int
@@ -118,7 +123,7 @@ main(int argc, char* argv[])
     }
 
     std::cout << std::endl;
-    
+
     // 使用RED队列管理器
     {
         std::cout << "Setting up topology with RED queue manager..." << std::endl;
